@@ -5,6 +5,8 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'echo "Building..."'
+                sh 'podman version'
+                sh 'kubectl version'
             }
         }
         
