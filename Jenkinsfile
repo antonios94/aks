@@ -6,7 +6,7 @@ pipeline {
     }
     
     stages {
-        stage('Build') {
+        stage('Build web app Docker Image') {
             steps {
                 sh 'echo "Building..."'
                 sh "podman build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
@@ -20,17 +20,24 @@ pipeline {
 		}  
             }
   }
-        stage('Test') {
-            steps {
-                sh 'echo "Testing..."'
-            }
-        }
+        stage('Update Deployment yaml') {
+           steps {
+                dir('yamls'){
+                  sh 'echo "Deploying..."'
+                  sh "sed -i 's/nginx:latest/antonios94\\/web-app-task:${IMAGE_TAG}/g' web-app.yaml"
+           	}
+	   }
+  }
         
-        stage('Deploy') {
-            steps {
-                sh 'echo "Deploying..."'
-            }
+         stage('Deploy deployment on aks cluster ') {
+        steps {
+	dir('yamls'){
+            withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {                     
+        	sh "kubectl apply -f . --kubeconfig=$KUBECONFIG_FILE"
+            }             
+        } 
         }
+ }
     }
     
 
