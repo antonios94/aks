@@ -1,0 +1,78 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: jenkins-nfs-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+        app: jenkins
+  template:
+    metadata:
+      labels:
+        app: jenkins
+    spec:
+      containers:
+      - name: jenkins
+        image: antonios94/jenkins:2
+        ports:
+        - containerPort: 8080
+        - containerPort: 50000 
+        readinessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 15
+        livenessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 15
+        resources:
+            requests:
+              memory: "5Gi"
+              cpu: 500m
+            limits:
+              memory: "8Gi"
+              cpu: 1500m   
+        volumeMounts:
+         - mountPath: /var/jenkins_home
+           name: jenkins-home
+        securityContext:
+          privileged: true
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+      volumes:
+        - name: jenkins-home
+          persistentVolumeClaim:
+            claimName: jenkins-nfs-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins-svc
+spec:
+  selector:
+    app: jenkins
+  ports:
+    - name: jenkins
+      port: 80
+      targetPort: 8080
+    - name: jenkins-jnlp
+      protocol: TCP
+      port: 50000
+      targetPort: 50000
+  type: LoadBalancer
+---
