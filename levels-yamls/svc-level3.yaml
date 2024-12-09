@@ -1,0 +1,16 @@
+
+cat <<EOF | kubectl apply -n level3 -f -
+apiVersion: v1
+kind: Service
+metadata:
+  name: next-level
+  labels:
+    unlock: level4
+spec:
+  ports:
+    - port: 27017
+      targetPort: 27017
+  selector:
+    unlock: level4
+EOF
+
