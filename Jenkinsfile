@@ -33,7 +33,7 @@ pipeline {
         steps {
 	dir('yamls'){
             withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {                     
-        	sh "kubectl apply -f . --kubeconfig=$KUBECONFIG_FILE"
+        	sh "kubectl apply -n level5 -f  . --kubeconfig=$KUBECONFIG_FILE"
             }             
         } 
         }
