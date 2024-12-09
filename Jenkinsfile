@@ -5,8 +5,7 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'echo "Building..."'
-                sh 'podman version'
-                sh 'kubectl version'
+                sh "podman build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
             }
         }
         
